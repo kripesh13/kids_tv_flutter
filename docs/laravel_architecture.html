@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Kids TV Streaming Platform - Laravel Backend Architecture & Developer Guide</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 14mm 14mm 16mm 14mm;
+      @bottom-right {
+        content: counter(page) " / " counter(pages);
+        font-size: 9pt;
+        color: #64748b;
+      }
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 10.5pt;
+      line-height: 1.55;
+      color: #1e293b;
+      background-color: #ffffff;
+    }
+
+    h1, h2, h3, h4, h5 {
+      color: #0f172a;
+      font-weight: 700;
+      page-break-after: avoid;
+    }
+
+    h1 {
+      font-size: 22pt;
+      line-height: 1.2;
+      color: #4338ca;
+      margin-bottom: 6px;
+    }
+
+    h2 {
+      font-size: 14pt;
+      line-height: 1.3;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 4px;
+      margin-top: 18px;
+      margin-bottom: 10px;
+      color: #3730a3;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    h3 {
+      font-size: 11.5pt;
+      margin-top: 14px;
+      margin-bottom: 6px;
+      color: #1e293b;
+    }
+
+    p {
+      margin-bottom: 8px;
+    }
+
+    .cover {
+      background: linear-gradient(135deg, #3730a3 0%, #4f46e5 50%, #7c3aed 100%);
+      color: #ffffff;
+      padding: 32px 28px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(67, 56, 202, 0.15);
+    }
+
+    .cover h1 {
+      color: #ffffff;
+      font-size: 24pt;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+
+    .cover .subtitle {
+      font-size: 12.5pt;
+      color: #e0e7ff;
+      margin-bottom: 16px;
+      font-weight: 400;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.12);
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 9pt;
+    }
+
+    .meta-item strong {
+      display: block;
+      color: #f1f5f9;
+      text-transform: uppercase;
+      font-size: 7.5pt;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
+
+    .meta-item span {
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 7.5pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .badge-get { background: #dcfce7; color: #15803d; }
+    .badge-post { background: #dbeafe; color: #1d4ed8; }
+    .badge-put { background: #fef3c7; color: #b45309; }
+    .badge-delete { background: #fee2e2; color: #b91c1c; }
+    .badge-auth { background: #ede9fe; color: #6d28d9; }
+    .badge-public { background: #e0f2fe; color: #0369a1; }
+
+    .card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+    }
+
+    .card-accent {
+      border-left: 4px solid #4f46e5;
+    }
+
+    .card-warning {
+      background: #fffbeb;
+      border-left: 4px solid #f59e0b;
+      border-color: #fde68a;
+    }
+
+    .card-success {
+      background: #f0fdf4;
+      border-left: 4px solid #10b981;
+      border-color: #bbf7d0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0 14px 0;
+      font-size: 9pt;
+      background: #ffffff;
+    }
+
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 6px 9px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f1f5f9;
+      color: #334155;
+      font-weight: 700;
+      font-size: 8.5pt;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 8.5pt;
+      background: #e2e8f0;
+      padding: 1.5px 5px;
+      border-radius: 4px;
+      color: #0f172a;
+    }
+
+    pre {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 8.5pt;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 10px 14px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 8px 0 12px 0;
+      line-height: 1.45;
+    }
+
+    .arch-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 14px 0;
+    }
+
+    .flow-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .flow-node {
+      flex: 1;
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 9pt;
+    }
+
+    .flow-node strong {
+      display: block;
+      color: #3730a3;
+      margin-bottom: 2px;
+    }
+
+    .flow-arrow {
+      color: #64748b;
+      font-weight: bold;
+      font-size: 13pt;
+    }
+
+    .page-break {
+      page-break-before: always;
+    }
+
+    .avoid-break {
+      page-break-inside: avoid;
+    }
+
+    ul, ol {
+      margin-left: 20px;
+      margin-bottom: 10px;
+      font-size: 9.5pt;
+    }
+
+    li {
+      margin-bottom: 4px;
+    }
+
+    .prompt-box {
+      background: #090d16;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 14px;
+      color: #cbd5e1;
+      font-size: 8.5pt;
+      line-height: 1.5;
+      margin: 12px 0;
+    }
+
+    .prompt-box h4 {
+      color: #38bdf8;
+      font-size: 10pt;
+      margin-bottom: 8px;
+      border-bottom: 1px solid #1e293b;
+      padding-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- COVER PAGE -->
+  <div class="cover">
+    <h1>Kids TV Streaming Platform</h1>
+    <div class="subtitle">Laravel 11+ REST API & Filament Admin Architecture Guide</div>
+    <div class="meta-grid">
+      <div class="meta-item">
+        <strong>Backend Framework</strong>
+        <span>Laravel 11 / PHP 8.3+</span>
+      </div>
+      <div class="meta-item">
+        <strong>Admin Engine</strong>
+        <span>Filament v3 (TALL Stack)</span>
+      </div>
+      <div class="meta-item">
+        <strong>API Consumers</strong>
+        <span>Flutter Mobile & Android TV</span>
+      </div>
+      <div class="meta-item">
+        <strong>Auth Protocol</strong>
+        <span>Laravel Sanctum + Guest Mode</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 1 -->
+  <h2>1. Executive Project Summary</h2>
+  <p>
+    This architectural document guides the complete end-to-end development of the **Kids Entertainment Streaming Platform** backend in **Laravel**. The backend powers two high-performance client applications developed in Flutter:
+  </p>
+  <ul>
+    <li><strong>Flutter Mobile App:</strong> Android & iOS with touch navigation, responsive layouts for smartphones and tablets.</li>
+    <li><strong>Android TV App:</strong> Big-screen landscape navigation, remote control D-pad focus management, and hardware video playback.</li>
+  </ul>
+  <p>
+    The Laravel backend serves two core purposes:
+  </p>
+  <ol>
+    <li><strong>High-Throughput RESTful API:</strong> Delivers video streaming manifests (HLS <code>.m3u8</code> / MP4), YouTube content, Live TV feeds, dynamic category listings, user favorites, video likes, and continue watching timestamps.</li>
+    <li><strong>Rich Web Admin Dashboard (Filament v3):</strong> Allows non-technical administrators to manage categories, upload/link universal media, configure authentication gates per category, and toggle global platform feature permissions.</li>
+  </ol>
+
+  <div class="card card-accent avoid-break">
+    <h3 style="color: #4338ca; margin-top:0;">Key Architectural Requirement: Dual User States</h3>
+    <p>
+      The mobile and TV platforms support <strong>Guest Users</strong> with <strong>zero-friction browsing</strong>. Guests can immediately browse public categories and watch public videos without creating an account. Interaction features (Favorites, Likes, Watch History, and restricted categories configured by the Admin) trigger authentication prompts.
+    </p>
+  </div>
+
+  <!-- SECTION 2 -->
+  <h2>2. System Architecture & Component Flow</h2>
+  <div class="card avoid-break">
+    <div class="arch-flow">
+      <div class="flow-row">
+        <div class="flow-node">
+          <strong>1. Client Layer (Flutter)</strong>
+          Mobile (iOS/Android) & Android TV Apps. Handles caching, D-pad remote focus, video rendering.
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node">
+          <strong>2. Gateway / Middleware</strong>
+          Laravel Routing, Rate Limiting, <code>auth:sanctum</code> (Optional Bearer token for guests), CORS.
+        </div>
+      </div>
+      <div class="flow-row">
+        <div class="flow-node">
+          <strong>3. API Controller Layer</strong>
+          Validates requests, delegates to Services, transforms models via Laravel API Resources.
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-node">
+          <strong>4. Filament v3 Admin Panel</strong>
+          Livewire/Tailwind admin dashboard for CMS, user management, and category authentication switches.
+        </div>
+      </div>
+      <div class="flow-row">
+        <div class="flow-node">
+          <strong>5. Data & Storage Layer</strong>
+          PostgreSQL / MySQL, Redis (Caching & Views count), AWS S3 / Cloudflare R2 (Thumbnails & Video storage).
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="page-break"></div>
+  <h2>3. Database Schema & Migration Blueprint</h2>
+  <p>The database schema preserves all properties implemented in the Flutter data layer for seamless integration.</p>
+
+  <div class="avoid-break">
+    <h3>3.1 Tables Overview</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Table Name</th>
+          <th>Purpose</th>
+          <th>Key Fields & Constraints</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>users</code></td>
+          <td>Authentication & account credentials</td>
+          <td><code>id (UUID)</code>, <code>name</code>, <code>email (unique)</code>, <code>password</code>, <code>role (enum: admin, user)</code></td>
+        </tr>
+        <tr>
+          <td><code>categories</code></td>
+          <td>Dynamic content taxonomy</td>
+          <td><code>id (UUID)</code>, <code>name</code>, <code>slug (unique)</code>, <code>icon_name</code>, <code>thumbnail_url</code>, <code>color_hex</code>, <code>display_order</code>, <code>is_featured</code>, <code>is_visible</code>, <strong><code>requires_login</code></strong>, <strong><code>allow_favorites</code></strong>, <strong><code>allow_sharing</code></strong></td>
+        </tr>
+        <tr>
+          <td><code>content_items</code></td>
+          <td>Universal video/media library</td>
+          <td><code>id (UUID)</code>, <code>title</code>, <code>description</code>, <code>thumbnail_url</code>, <code>category_id (FK)</code>, <code>content_type (enum: video, youtube_video, live_stream, etc.)</code>, <code>source_url</code>, <code>duration_seconds</code>, <code>views_count</code>, <code>is_featured</code>, <code>is_visible</code>, <code>tags (JSON)</code></td>
+        </tr>
+        <tr>
+          <td><code>banners</code></td>
+          <td>Home carousel hero banners</td>
+          <td><code>id (UUID)</code>, <code>title</code>, <code>subtitle</code>, <code>image_url</code>, <code>action_type (content, category, external)</code>, <code>action_target</code>, <code>display_order</code>, <code>is_active</code></td>
+        </tr>
+        <tr>
+          <td><code>live_channels</code></td>
+          <td>24/7 continuous broadcast streams</td>
+          <td><code>id (UUID)</code>, <code>name</code>, <code>stream_url (HLS m3u8)</code>, <code>web_stream_url (MP4 fallback)</code>, <code>logo_url</code>, <code>channel_number</code>, <code>current_program</code>, <code>is_active</code>, <code>display_order</code></td>
+        </tr>
+        <tr>
+          <td><code>youtube_channels</code></td>
+          <td>Curated child-safe YouTube creators</td>
+          <td><code>id (UUID)</code>, <code>title</code>, <code>channel_id (unique)</code>, <code>channel_url</code>, <code>thumbnail_url</code>, <code>subscriber_count</code>, <code>video_count</code>, <code>is_featured</code>, <code>display_order</code></td>
+        </tr>
+        <tr>
+          <td><code>feature_permissions</code></td>
+          <td>Admin-controlled auth matrix</td>
+          <td><code>feature_key (PK: string)</code>, <code>requires_login (boolean)</code>, <code>description</code></td>
+        </tr>
+        <tr>
+          <td><code>favorites</code></td>
+          <td>User personal saved items</td>
+          <td><code>id (UUID)</code>, <code>user_id (FK)</code>, <code>content_item_id (FK)</code>, <code>UNIQUE(user_id, content_item_id)</code></td>
+        </tr>
+        <tr>
+          <td><code>video_likes</code></td>
+          <td>Video like counter & tracking</td>
+          <td><code>id (UUID)</code>, <code>user_id (FK)</code>, <code>content_item_id (FK)</code>, <code>UNIQUE(user_id, content_item_id)</code></td>
+        </tr>
+        <tr>
+          <td><code>watch_history</code></td>
+          <td>Continue watching & playback position</td>
+          <td><code>id (UUID)</code>, <code>user_id (FK)</code>, <code>content_item_id (FK)</code>, <code>last_position_seconds</code>, <code>total_duration_seconds</code>, <code>completed (boolean)</code>, <code>UNIQUE(user_id, content_item_id)</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="avoid-break">
+    <h3>3.2 Default Feature Permissions Seeder</h3>
+    <pre><code>// database/seeders/FeaturePermissionSeeder.php
+$features = [
+    ['feature_key' => 'browse_videos', 'requires_login' => false, 'description' => 'Browse video lists'],
+    ['feature_key' => 'watch_videos', 'requires_login' => false, 'description' => 'Watch public streams'],
+    ['feature_key' => 'favorites', 'requires_login' => true, 'description' => 'Save favorite videos'],
+    ['feature_key' => 'likes', 'requires_login' => true, 'description' => 'Like/unlike videos'],
+    ['feature_key' => 'watch_history', 'requires_login' => true, 'description' => 'Track playback history'],
+    ['feature_key' => 'continue_watching', 'requires_login' => true, 'description' => 'Resume from last position'],
+    ['feature_key' => 'restricted_categories', 'requires_login' => true, 'description' => 'Access locked categories'],
+    ['feature_key' => 'search', 'requires_login' => false, 'description' => 'Search content library'],
+    ['feature_key' => 'share_videos', 'requires_login' => false, 'description' => 'Native link sharing'],
+];
+FeaturePermission::upsert($features, ['feature_key'], ['requires_login', 'description']);</code></pre>
+  </div>
+
+  <!-- SECTION 4 -->
+  <div class="page-break"></div>
+  <h2>4. RESTful API Endpoints Specification</h2>
+  <p>All endpoints return standardized JSON formatted for the Flutter mobile & TV repositories.</p>
+
+  <div class="avoid-break">
+    <h3>4.1 Authentication Endpoints (Laravel Sanctum)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Endpoint</th>
+          <th>Auth</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-post">POST</span></td>
+          <td><code>/api/v1/auth/register</code></td>
+          <td><span class="badge badge-public">Public</span></td>
+          <td>Registers member: <code>name</code>, <code>email</code>, <code>password</code>. Returns User + Sanctum Bearer token.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-post">POST</span></td>
+          <td><code>/api/v1/auth/login</code></td>
+          <td><span class="badge badge-public">Public</span></td>
+          <td>Authenticates with <code>email</code> and <code>password</code>. Returns User + Sanctum token.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-post">POST</span></td>
+          <td><code>/api/v1/auth/logout</code></td>
+          <td><span class="badge badge-auth">Sanctum</span></td>
+          <td>Revokes current access token.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-post">POST</span></td>
+          <td><code>/api/v1/auth/forgot-password</code></td>
+          <td><span class="badge badge-public">Public</span></td>
+          <td>Sends password reset email link.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/v1/auth/profile</code></td>
+          <td><span class="badge badge-auth">Sanctum</span></td>
+          <td>Fetches current user profile and role.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="avoid-break">
+    <h3>4.2 Content & Streaming Endpoints</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Endpoint</th>
+          <th>Auth</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/v1/categories</code></td>
+          <td><span class="badge badge-public">Optional</span></td>
+          <td>List visible categories. Returns <code>requires_login</code> flag so client can enforce lock icon.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/v1/categories/{id}</code></td>
+          <td><span class="badge badge-public">Optional</span></td>
+          <td>Category details + video list. If category has <code>requires_login: true</code> and user is unauthenticated, returns <code>403 Forbidden</code> with code <code>LOGIN_REQUIRED</code>.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/v1/content</code></td>
+          <td><span class="badge badge-public">Optional</span></td>
+          <td>Filterable content: <code>?category_id=...&is_featured=1&search=...&page=1</code>.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/v1/content/{id}</code></td>
+          <td><span class="badge badge-public">Optional</span></td>
+          <td>Video details: streaming URL, likes count, is_liked (if auth), is_favorite (if auth).</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-post">POST</span></td>
+          <td><code>/api/v1/content/{id}/views</code></td>
+          <td><span class="badge badge-public">Public</span></td>
+          <td>Atomically increments view counter (buffered in Redis).</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/v1/banners</code></td>
+          <td><span class="badge badge-public">Public</span></td>
+          <td>Active home featured banners for carousel.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/v1/live-channels</code></td>
+          <td><span class="badge badge-public">Public</span></td>
+          <td>Active 24/7 TV channels (HLS m3u8 + MP4 web fallback).</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/v1/youtube-channels</code></td>
+          <td><span class="badge badge-public">Public</span></td>
+          <td>Curated YouTube superstars channel listings.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/v1/features/permissions</code></td>
+          <td><span class="badge badge-public">Public</span></td>
+          <td>Returns key-value map of feature auth requirements.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="avoid-break">
+    <h3>4.3 Member Interactions (Authenticated User Only)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Endpoint</th>
+          <th>Auth</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/v1/user/favorites</code></td>
+          <td><span class="badge badge-auth">Sanctum</span></td>
+          <td>List user saved favorite videos.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-post">POST</span></td>
+          <td><code>/api/v1/user/favorites/{content_id}</code></td>
+          <td><span class="badge badge-auth">Sanctum</span></td>
+          <td>Toggles favorite status (returns <code>{is_favorite: bool}</code>).</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-post">POST</span></td>
+          <td><code>/api/v1/user/likes/{content_id}</code></td>
+          <td><span class="badge badge-auth">Sanctum</span></td>
+          <td>Toggles video like (returns <code>{is_liked: bool, likes_count: int}</code>).</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-get">GET</span></td>
+          <td><code>/api/v1/user/watch-history</code></td>
+          <td><span class="badge badge-auth">Sanctum</span></td>
+          <td>List continue watching items sorted by latest activity.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-post">POST</span></td>
+          <td><code>/api/v1/user/watch-history</code></td>
+          <td><span class="badge badge-auth">Sanctum</span></td>
+          <td>Upserts playback position: <code>content_id</code>, <code>position_seconds</code>, <code>total_duration_seconds</code>.</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-delete">DELETE</span></td>
+          <td><code>/api/v1/user/watch-history</code></td>
+          <td><span class="badge badge-auth">Sanctum</span></td>
+          <td>Clears personal watch history.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION 5 -->
+  <div class="page-break"></div>
+  <h2>5. Filament v3 Admin Panel Design</h2>
+  <p>
+    Filament v3 is the recommended admin framework for Laravel 11. It provides a lightning-fast, reactive TALL stack (Tailwind, Alpine, Laravel, Livewire) interface:
+  </p>
+
+  <div class="card avoid-break">
+    <h3>5.1 Category Resource Configuration</h3>
+    <p>Admins control guest restrictions directly from the form:</p>
+    <pre><code>// app/Filament/Resources/CategoryResource.php
+Forms\Components\TextInput::make('name')->required()->live(onBlur: true)
+    ->afterStateUpdated(fn ($set, $state) => $set('slug', Str::slug($state))),
+Forms\Components\ColorPicker::make('color_hex')->default('#6657E8'),
+Forms\Components\FileUpload::make('thumbnail_url')->image()->directory('categories'),
+Forms\Components\Section::make('Access & Security Controls')->schema([
+    Forms\Components\Toggle::make('is_visible')->label('Enable Category')->default(true),
+    Forms\Components\Toggle::make('requires_login')
+        ->label('Require User Login (Guest Gate)')
+        ->helperText('Guests will be prompted to sign in when clicking this category')
+        ->default(false),
+    Forms\Components\Toggle::make('is_featured')->label('Show on Homepage')->default(false),
+    Forms\Components\Toggle::make('allow_favorites')->label('Allow Favorites')->default(true),
+    Forms\Components\Toggle::make('allow_sharing')->label('Allow Sharing')->default(true),
+])->columns(2);</code></pre>
+  </div>
+
+  <div class="card avoid-break">
+    <h3>5.2 Universal Content Management Resource</h3>
+    <ul>
+      <li><strong>Polymorphic Content Support:</strong> Switch input fields based on <code>content_type</code>:
+        <ul>
+          <li><code>video</code>: Direct file upload to S3/Cloudflare R2 or direct MP4 URL.</li>
+          <li><code>youtube_video</code> / <code>youtube_channel</code>: YouTube video ID or Channel URL.</li>
+          <li><code>live_stream</code>: M3U8 HLS stream URL with MP4 fallback.</li>
+        </ul>
+      </li>
+      <li><strong>Bulk Actions:</strong> Bulk publish, unpublish, change category, feature/unfeature.</li>
+      <li><strong>Analytics Column:</strong> Live view counts and like counter badges in table row.</li>
+    </ul>
+  </div>
+
+  <div class="card avoid-break">
+    <h3>5.3 Feature Permissions Page</h3>
+    <p>A custom Filament settings page providing an interactive toggle matrix for the 9 platform features. Toggling a switch immediately updates the <code>feature_permissions</code> table, instantly restricting or permitting guest users in the mobile and TV apps.</p>
+  </div>
+
+  <!-- SECTION 6 -->
+  <div class="page-break"></div>
+  <h2>6. Step-by-Step Implementation Roadmap</h2>
+  <div class="card card-accent avoid-break">
+    <h3>Phase 1: Project Setup & Database Foundations</h3>
+    <ul>
+      <li>Create fresh Laravel 11 project: <code>composer create-project laravel/laravel kids-tv-api</code></li>
+      <li>Install packages: <code>composer require laravel/sanctum filament/filament:^3.2 spatie/laravel-permission</code></li>
+      <li>Configure <code>.env</code> with PostgreSQL or MySQL and Redis cache.</li>
+      <li>Run database migrations for users, categories, content_items, banners, live_channels, youtube_channels, feature_permissions, favorites, likes, and watch_history.</li>
+      <li>Seed default categories and initial feature permission matrix.</li>
+    </ul>
+  </div>
+
+  <div class="card card-accent avoid-break">
+    <h3>Phase 2: Authentication & Access Control Services</h3>
+    <ul>
+      <li>Configure Laravel Sanctum for API token issuance and SPA cookie auth.</li>
+      <li>Implement <code>CategoryAccessMiddleware</code>: blocks guests when <code>requires_login = true</code>.</li>
+      <li>Implement <code>FeatureAccessMiddleware</code>: checks <code>feature_permissions</code> table for guest restrictions.</li>
+      <li>Create <code>AuthController</code> with register, login, profile, and logout endpoints.</li>
+    </ul>
+  </div>
+
+  <div class="card card-accent avoid-break">
+    <h3>Phase 3: Public & Streaming APIs</h3>
+    <ul>
+      <li>Implement <code>CategoryController</code>, <code>ContentController</code>, <code>BannerController</code>, <code>LiveChannelController</code>, <code>YoutubeChannelController</code>.</li>
+      <li>Build Laravel API Resources (<code>CategoryResource</code>, <code>ContentItemResource</code>) matching the exact JSON format expected by the Flutter clients.</li>
+      <li>Implement buffered view incrementing via Redis to prevent database write bottlenecks.</li>
+    </ul>
+  </div>
+
+  <div class="card card-accent avoid-break">
+    <h3>Phase 4: Filament v3 Admin Panel</h3>
+    <ul>
+      <li>Install Filament: <code>php artisan filament:install --panels</code></li>
+      <li>Generate resources: <code>CategoryResource</code>, <code>ContentItemResource</code>, <code>BannerResource</code>, <code>LiveChannelResource</code>, <code>UserResource</code>.</li>
+      <li>Build <code>FeaturePermissions</code> custom page with reactive toggles.</li>
+      <li>Configure authorization policies so only <code>role = 'admin'</code> can access <code>/admin</code>.</li>
+    </ul>
+  </div>
+
+  <div class="card card-accent avoid-break">
+    <h3>Phase 5: Cloud Storage & Video Streaming Optimization</h3>
+    <ul>
+      <li>Configure S3/Cloudflare R2 driver for video and thumbnail uploads.</li>
+      <li>Add Cloudflare Stream or AWS CloudFront CDN caching headers for HLS streaming.</li>
+      <li>Test with high-concurrency requests using Laravel Octane (FrankenPHP or Swoole).</li>
+    </ul>
+  </div>
+
+  <!-- SECTION 7 -->
+  <div class="page-break"></div>
+  <h2>7. Complete Developer Implementation Prompt</h2>
+  <p>Copy and give the following prompt directly to your Laravel developer:</p>
+
+  <div class="prompt-box">
+    <h4>MASTER PROMPT FOR LARAVEL DEVELOPER</h4>
+    <p><strong>Role:</strong> Act as a Senior Full-Stack Laravel Architect & API Engineer.</p>
+    <p><strong>Goal:</strong> Build a high-performance RESTful API and Filament v3 Admin Panel for a multi-platform Kids Entertainment Streaming Platform (supporting Flutter Mobile and Android TV apps).</p>
+    <p><strong>Technical Stack:</strong></p>
+    <ul>
+      <li>Framework: Laravel 11 / PHP 8.3+</li>
+      <li>Admin Panel: Filament v3 (TALL Stack)</li>
+      <li>Authentication: Laravel Sanctum (Tokens for Mobile/TV + Session for Admin)</li>
+      <li>Database: PostgreSQL or MySQL (UUID primary keys for all public tables)</li>
+      <li>Cache/Queue: Redis</li>
+      <li>Media Storage: AWS S3 or Cloudflare R2</li>
+    </ul>
+    <p><strong>Core Deliverables:</strong></p>
+    <ol>
+      <li><strong>Database Migrations & Models:</strong>
+        <ul>
+          <li><code>users</code>: UUID, name, email, password, role ('admin', 'user').</li>
+          <li><code>categories</code>: UUID, name, slug, icon_name, thumbnail_url, color_hex, display_order, is_featured, is_visible, <strong>requires_login</strong>, <strong>allow_favorites</strong>, <strong>allow_sharing</strong>.</li>
+          <li><code>content_items</code>: UUID, title, description, thumbnail_url, category_id, content_type ('video', 'youtube_video', 'live_stream', 'external_url'), source_url, duration_seconds, views_count, is_featured, is_visible, tags (JSON).</li>
+          <li><code>banners</code>: UUID, title, subtitle, image_url, action_type, action_target, display_order, is_active.</li>
+          <li><code>live_channels</code>: UUID, name, stream_url (m3u8), web_stream_url, logo_url, channel_number, current_program, is_active, display_order.</li>
+          <li><code>youtube_channels</code>: UUID, title, channel_id, channel_url, thumbnail_url, subscriber_count, video_count, is_featured.</li>
+          <li><code>feature_permissions</code>: feature_key (PK), requires_login (boolean), description.</li>
+          <li><code>favorites</code>, <code>video_likes</code>, <code>watch_history</code> (last_position_seconds, total_duration_seconds, completed).</li>
+        </ul>
+      </li>
+      <li><strong>Authentication & Permissions Flow:</strong>
+        <ul>
+          <li>Guest users MUST be able to browse public categories and stream public videos with ZERO login required.</li>
+          <li>When an admin sets <code>requires_login = true</code> on a category, unauthenticated requests to that category must return HTTP 403 with <code>{"error": "LOGIN_REQUIRED", "message": "This category is reserved for members"}</code>.</li>
+          <li>Feature-level access control: check <code>feature_permissions</code> table before allowing favorites, likes, or history updates.</li>
+        </ul>
+      </li>
+      <li><strong>Filament v3 Admin Portal:</strong>
+        <ul>
+          <li>Build CategoryResource with reactive switches for <code>requires_login</code>, <code>allow_favorites</code>, <code>allow_sharing</code>.</li>
+          <li>Build ContentItemResource supporting video upload, YouTube linking, and HLS streams.</li>
+          <li>Build FeaturePermissionsPage with live toggles for the 9 platform features.</li>
+          <li>Restricted access: only users with <code>role = 'admin'</code> can access <code>/admin</code>.</li>
+        </ul>
+      </li>
+      <li><strong>API Contract (JSON):</strong>
+        <ul>
+          <li>All endpoints under <code>/api/v1/</code>.</li>
+          <li>Follow strict JSON API structure with data, error, and meta fields matching the Flutter client models.</li>
+          <li>Include atomic view counter buffered via Redis.</li>
+        </ul>
+      </li>
+    </ol>
+  </div>
+
+</body>
+</html>
