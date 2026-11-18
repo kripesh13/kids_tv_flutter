@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../../core/constants/app_constants.dart';
@@ -35,11 +36,19 @@ class HiveCacheManager {
 
   Box get settingsBox => _settingsBox;
 
-  Future<void> init() async {
+  Future<void> init([String? storagePath]) async {
     if (_isInitialized) return;
 
     try {
-      await Hive.initFlutter();
+      if (storagePath != null && storagePath.isNotEmpty) {
+        Hive.init(storagePath);
+      } else {
+        try {
+          await Hive.initFlutter();
+        } catch (_) {
+          Hive.init(Directory.systemTemp.path);
+        }
+      }
 
       _registerAdapterSafe(ContentTypeAdapter());
       _registerAdapterSafe(BannerActionAdapter());

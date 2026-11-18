@@ -1,11 +1,30 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hive/hive.dart';
+import 'package:kids_tv/data/datasources/local/hive_cache_manager.dart';
 import 'package:kids_tv/data/datasources/mock_seed_data.dart';
 import 'package:kids_tv/main.dart';
 import 'package:kids_tv/presentation/shared/widgets/live_channel_card.dart';
 
 void main() {
+  late Directory tempDir;
+
+  setUpAll(() async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    tempDir = await Directory.systemTemp.createTemp('kids_tv_widget_test_');
+    await HiveCacheManager().init(tempDir.path);
+  });
+
+  tearDownAll(() async {
+    try {
+      await Hive.close();
+      if (tempDir.existsSync()) {
+        tempDir.deleteSync(recursive: true);
+      }
+    } catch (_) {}
+  });
   testWidgets('Kids TV app builds smoke test', (WidgetTester tester) async {
     await tester.pumpWidget(
       const ProviderScope(

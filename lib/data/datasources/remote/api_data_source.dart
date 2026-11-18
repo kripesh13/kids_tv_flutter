@@ -7,7 +7,6 @@ import '../../../domain/enums/user_role.dart';
 import '../../models/banner_model.dart';
 import '../../models/category_model.dart';
 import '../../models/content_item_model.dart';
-import '../../models/feature_permission_model.dart';
 import '../../models/live_channel_model.dart';
 import '../../models/user_profile_model.dart';
 import '../../models/watch_history_model.dart';
@@ -286,13 +285,12 @@ class ApiDataSource {
     String? searchQuery,
   }) async {
     try {
-      final params = <String, dynamic>{
-        if (categoryId != null && categoryId.isNotEmpty) 'category_id': categoryId,
-        if (isFeatured != null) 'is_featured': isFeatured,
-        if (searchQuery != null && searchQuery.isNotEmpty) 'search': searchQuery,
-        if (limit != null) 'limit': limit,
-        if (offset != null) 'offset': offset,
-      };
+      final params = <String, dynamic>{};
+      if (categoryId != null && categoryId.isNotEmpty) params['category_id'] = categoryId;
+      if (isFeatured != null) params['is_featured'] = isFeatured;
+      if (searchQuery != null && searchQuery.isNotEmpty) params['search'] = searchQuery;
+      if (limit != null) params['limit'] = limit;
+      if (offset != null) params['offset'] = offset;
 
       final res = await _client.get(ApiEndpoints.content, queryParameters: params);
       final listData = _extractListData(res);

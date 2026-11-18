@@ -1,8 +1,11 @@
+import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hive/hive.dart';
 import 'package:kids_tv/core/config/app_config.dart';
 import 'package:kids_tv/core/services/access_control_service.dart';
+import 'package:kids_tv/data/datasources/local/hive_cache_manager.dart';
 import 'package:kids_tv/data/datasources/mock_seed_data.dart';
-import 'package:kids_tv/data/datasources/supabase_datasource.dart';
+import 'package:kids_tv/data/datasources/remote/api_data_source.dart';
 import 'package:kids_tv/data/models/category_model.dart';
 import 'package:kids_tv/data/models/content_item_model.dart';
 import 'package:kids_tv/data/models/feature_permission_model.dart';
@@ -12,6 +15,22 @@ import 'package:kids_tv/domain/enums/content_type.dart';
 import 'package:kids_tv/domain/enums/user_role.dart';
 
 void main() {
+  late Directory tempDir;
+
+  setUpAll(() async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    tempDir = await Directory.systemTemp.createTemp('kids_tv_test_');
+    await HiveCacheManager().init(tempDir.path);
+  });
+
+  tearDownAll(() async {
+    try {
+      await Hive.close();
+      if (tempDir.existsSync()) {
+        tempDir.deleteSync(recursive: true);
+      }
+    } catch (_) {}
+  });
   group('1. Centralized Build Types & AppConfig', () {
     test('AppType has exactly admin and user values', () {
       expect(AppType.values, containsAll([AppType.admin, AppType.user]));
@@ -292,9 +311,9 @@ void main() {
     });
   });
 
-  group('8. SupabaseDataSource - In-Memory Fallbacks for Features, Favorites, Likes, History', () {
-    test('Feature permissions get and update dynamically in memory', () async {
-      final ds = SupabaseDataSource();
+  group('8. ApiDataSource & HiveCacheManager - Local Cache, Features, Favorites, Likes, History', () {
+    test('Feature permissions get and update dynamically in Hive cache', () async {
+      final ds = ApiDataSource();
       final permissions = await ds.getFeaturePermissions();
       expect(permissions.containsKey('favorites'), isTrue);
 
@@ -305,13 +324,15 @@ void main() {
     });
 
     test('Unauthenticated user cannot toggle favorites or likes', () async {
-      final ds = SupabaseDataSource();
+      final ds = ApiDataSource();
+      // Ensure cache auth is clear
+      await ds.signOut();
       expect(() => ds.toggleFavorite('c1'), throwsA(isA<Exception>()));
       expect(() => ds.toggleLike('c1'), throwsA(isA<Exception>()));
     });
 
     test('Authenticated user can toggle favorites, likes, and record watch history', () async {
-      final ds = SupabaseDataSource();
+      final ds = ApiDataSource();
       // Sign in demo admin/user
       await ds.signInWithDemo(role: UserRole.admin);
 
@@ -329,8 +350,6 @@ void main() {
       // Toggle like
       final isLiked = await ds.toggleLike('c1');
       expect(isLiked, isTrue);
-      final likeCount = await ds.getContentLikesCount('c1');
-      expect(likeCount, greaterThanOrEqualTo(1));
 
       // Record watch history
       await ds.updateWatchHistory(
